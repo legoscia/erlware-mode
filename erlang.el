@@ -4403,7 +4403,9 @@ editing control characters:
 \\{erlang-shell-mode-map}"
   (interactive
    (when current-prefix-arg
-     (list (read-string "Erlang command: "))))
+     (list (if (fboundp 'read-shell-command)
+	       (read-shell-command "Erlang command: ")
+	     (read-string "Erlang command: ")))))
   (require 'comint)
   (let (cmd opts)
     (if command
