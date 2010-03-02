@@ -3,7 +3,7 @@
 ;; Copyright (C) 1995-1998,2000  Ericsson Telecom AB
 ;; Copyright (C) 2004  Free Software Foundation, Inc.
 ;; Author:   Anders Lindgren
-;; Version:  0.1.18
+;; Version:  0.1.19
 ;; Keywords: erlang, languages, processes
 ;; Date:     2000-09-11
 
@@ -83,7 +83,7 @@
 
 ;; Variables:
 
-(defconst erlang-version "0.1.18"
+(defconst erlang-version "0.1.19"
   "The version number of Erlware Erlang mode.")
 
 (defvar erlang-man-root-dir nil
@@ -452,6 +452,13 @@ module after it has been compiled.
 
 To activate the workaround, place the following in your `~/.emacs' file:
     (setq erlang-compile-use-outdir nil)")
+
+(defvar erlang-compile-outdir ""
+  "*This value is concat'ed to outdir while compiling.
+
+If you have your erl files in /some/path/src and desire the beams to
+be placed in ../ebin set in your '~/.emacs' file:
+   (setq erlang-compile-outdir \"../ebin\"")
 
 (defvar erlang-indent-level 4
   "*Indentation of Erlang calls/clauses within blocks.")
@@ -4622,7 +4629,7 @@ There exists two workarounds for this bug:
         (inferior-erlang)))
   (or (inferior-erlang-running-p)
       (error "Error starting inferior Erlang shell"))
-  (let ((dir (file-name-directory (buffer-file-name)))
+  (let ((outdir (concat (file-name-directory (buffer-file-name)) erlang-compile-outdir))
         ;;; (file (file-name-nondirectory (buffer-file-name)))
         (noext (substring (buffer-file-name) 0 -4))
         ;; Hopefully, noone else will ever use these...
@@ -4633,14 +4640,14 @@ There exists two workarounds for this bug:
     (inferior-erlang-wait-prompt)
     (setq end (inferior-erlang-send-command
                (if erlang-compile-use-outdir
-                   (format "c(\"%s\", [{outdir, \"%s\"}])." noext dir)
+                   (format "c(\"%s\", [{outdir, \"%s\"}])." noext outdir)
                  (format
                   (concat
                    "f(%s), {ok, %s} = file:get_cwd(), "
                    "file:set_cwd(\"%s\"), "
                    "%s = c(\"%s\"), file:set_cwd(%s), f(%s), %s.")
                   tmpvar2 tmpvar
-                  dir
+                  outdir
                   tmpvar2 noext tmpvar tmpvar tmpvar2))
                nil))
     (inferior-erlang-wait-prompt)
